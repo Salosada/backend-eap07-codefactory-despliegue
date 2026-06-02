@@ -34,7 +34,7 @@ Feature: Reembolsos de pagos aprobados
       { "amount": 5000, "reason": "Devolución de artículo" }
       """
     Then la respuesta debe tener código 200
-    And el campo "status" debe ser "PARTIALLY_REFUNDED"
+    And el campo "status" debe ser "COMPLETED"
 
   @HU017 @error
   Scenario: No es posible reembolsar más del monto disponible

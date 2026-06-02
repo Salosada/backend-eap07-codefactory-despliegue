@@ -122,23 +122,25 @@ public class TransactionApplicationService {
         LocalDateTime fromInclusive = from.atStartOfDay();
         LocalDateTime toExclusive = to.plusDays(1).atStartOfDay();
 
-        List<TransactionStatus> finalizedStatuses = List.of(
+        List<TransactionStatus> queryStatuses = List.of(
                 TransactionStatus.APPROVED,
                 TransactionStatus.REJECTED,
-                TransactionStatus.FAILED
+                TransactionStatus.FAILED,
+                TransactionStatus.PARTIALLY_REFUNDED,
+                TransactionStatus.REFUNDED
         );
 
         List<TransactionStatusCount> counts =
                 transactionRepositoryPort.countByMerchantIdAndStatusInAndCreatedAtBetween(
                         merchantId,
-                        finalizedStatuses,
+                        queryStatuses,
                         fromInclusive,
                         toExclusive
                 );
 
         Map<TransactionStatus, Long> countByStatus = new EnumMap<>(TransactionStatus.class);
 
-        for (TransactionStatus status : finalizedStatuses) {
+        for (TransactionStatus status : queryStatuses) {
             countByStatus.put(status, 0L);
         }
 
@@ -146,23 +148,36 @@ public class TransactionApplicationService {
             countByStatus.put(count.status(), count.count());
         }
 
-        long totalFinalized = countByStatus.values()
-                .stream()
-                .mapToLong(Long::longValue)
+        // Compatibilidad: registros legacy en PARTIALLY_REFUNDED cuentan como aprobadas activas
+        long legacyPartial = countByStatus.getOrDefault(TransactionStatus.PARTIALLY_REFUNDED, 0L);
+        if (legacyPartial > 0) {
+            countByStatus.merge(TransactionStatus.APPROVED, legacyPartial, Long::sum);
+            countByStatus.put(TransactionStatus.PARTIALLY_REFUNDED, 0L);
+        }
+
+        List<TransactionStatus> reportStatuses = List.of(
+                TransactionStatus.APPROVED,
+                TransactionStatus.REJECTED,
+                TransactionStatus.FAILED,
+                TransactionStatus.REFUNDED
+        );
+
+        long totalFinalized = reportStatuses.stream()
+                .mapToLong(status -> countByStatus.getOrDefault(status, 0L))
                 .sum();
 
-        List<PaymentStatusDistributionItem> distribution = finalizedStatuses.stream()
+        List<PaymentStatusDistributionItem> distribution = reportStatuses.stream()
                 .map(status -> new PaymentStatusDistributionItem(
                         status,
-                        countByStatus.get(status),
-                        percentage(countByStatus.get(status), totalFinalized)
+                        countByStatus.getOrDefault(status, 0L),
+                        percentage(countByStatus.getOrDefault(status, 0L), totalFinalized)
                 ))
                 .toList();
 
-        BigDecimal approvalRate = percentage(
-                countByStatus.get(TransactionStatus.APPROVED),
-                totalFinalized
-        );
+        long successfulPayments = countByStatus.getOrDefault(TransactionStatus.APPROVED, 0L)
+                + countByStatus.getOrDefault(TransactionStatus.REFUNDED, 0L);
+
+        BigDecimal approvalRate = percentage(successfulPayments, totalFinalized);
 
         return new PaymentStatusDistribution(
                 from,

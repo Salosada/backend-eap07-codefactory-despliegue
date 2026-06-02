@@ -57,12 +57,12 @@ class TransactionRefundTest {
     }
 
     @Test
-    @DisplayName("HU016 - Reembolso total desde estado PARTIALLY_REFUNDED")
+    @DisplayName("HU016 - Reembolso total desde pago con reembolso parcial previo")
     void shouldRefundFull_WhenTransactionIsPartiallyRefunded() {
-        // Arrange: pago de 100, ya devolvimos 30
+        // Arrange: pago de 100, ya devolvimos 30 (sigue APPROVED)
         Transaction tx = new Transaction("tx-1", "mch-1",
                 new BigDecimal("100.00"),
-                TransactionStatus.PARTIALLY_REFUNDED,
+                TransactionStatus.APPROVED,
                 new BigDecimal("30.00"));
 
         // Act
@@ -85,7 +85,7 @@ class TransactionRefundTest {
         tx.refundPartial(new BigDecimal("30.00"));
 
         // Assert
-        assertEquals(TransactionStatus.PARTIALLY_REFUNDED, tx.getStatus());
+        assertEquals(TransactionStatus.APPROVED, tx.getStatus());
         assertEquals(new BigDecimal("30.00"), tx.getRefundedAmount());
         assertEquals(new BigDecimal("70.00"), tx.getAvailableForRefund());
     }
@@ -96,7 +96,7 @@ class TransactionRefundTest {
         // Arrange: pago de 100, ya devolvimos 80, quedan 20
         Transaction tx = new Transaction("tx-1", "mch-1",
                 new BigDecimal("100.00"),
-                TransactionStatus.PARTIALLY_REFUNDED,
+                TransactionStatus.APPROVED,
                 new BigDecimal("80.00"));
 
         // Act & Assert: intentamos devolver 50 cuando solo hay 20
@@ -104,6 +104,18 @@ class TransactionRefundTest {
                 InvalidTransactionStateException.class,
                 () -> tx.refundPartial(new BigDecimal("50.00")));
         assertTrue(ex.getMessage().contains("supera el disponible"));
+    }
+
+    @Test
+    @DisplayName("HU017 - Reembolso parcial por el monto total pasa a REFUNDED")
+    void shouldTransitionToRefunded_WhenSinglePartialEqualsTotal() {
+        Transaction tx = approvedTransaction("100.00");
+
+        tx.refundPartial(new BigDecimal("100.00"));
+
+        assertEquals(TransactionStatus.REFUNDED, tx.getStatus());
+        assertEquals(new BigDecimal("100.00"), tx.getRefundedAmount());
+        assertEquals(0, tx.getAvailableForRefund().compareTo(BigDecimal.ZERO));
     }
 
     @Test

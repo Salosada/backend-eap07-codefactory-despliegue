@@ -36,8 +36,8 @@ public interface ITransactionSpringRepository extends JpaRepository<TransactionJ
         SELECT
             DATE_FORMAT(t.created_at, '%Y-%m-%d') AS period,
             COUNT(*) AS transactionCount,
-            COALESCE(SUM(t.amount), 0) AS totalAmount,
-            COALESCE(SUM(CASE WHEN t.status = 'APPROVED' THEN 1 ELSE 0 END), 0) AS approvedCount,
+            COALESCE(SUM(t.amount - COALESCE(t.refunded_amount, 0)), 0) AS totalAmount,
+            COALESCE(SUM(CASE WHEN t.status IN ('APPROVED', 'PARTIALLY_REFUNDED', 'REFUNDED') THEN 1 ELSE 0 END), 0) AS approvedCount,
             COALESCE(SUM(CASE WHEN t.status = 'REJECTED' THEN 1 ELSE 0 END), 0) AS rejectedCount,
             COALESCE(SUM(CASE WHEN t.status = 'FAILED' THEN 1 ELSE 0 END), 0) AS failedCount
         FROM transactions t
@@ -57,8 +57,8 @@ public interface ITransactionSpringRepository extends JpaRepository<TransactionJ
         SELECT
             DATE_FORMAT(t.created_at, '%Y-%m') AS period,
             COUNT(*) AS transactionCount,
-            COALESCE(SUM(t.amount), 0) AS totalAmount,
-            COALESCE(SUM(CASE WHEN t.status = 'APPROVED' THEN 1 ELSE 0 END), 0) AS approvedCount,
+            COALESCE(SUM(t.amount - COALESCE(t.refunded_amount, 0)), 0) AS totalAmount,
+            COALESCE(SUM(CASE WHEN t.status IN ('APPROVED', 'PARTIALLY_REFUNDED', 'REFUNDED') THEN 1 ELSE 0 END), 0) AS approvedCount,
             COALESCE(SUM(CASE WHEN t.status = 'REJECTED' THEN 1 ELSE 0 END), 0) AS rejectedCount,
             COALESCE(SUM(CASE WHEN t.status = 'FAILED' THEN 1 ELSE 0 END), 0) AS failedCount
         FROM transactions t

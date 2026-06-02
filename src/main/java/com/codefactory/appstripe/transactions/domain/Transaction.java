@@ -93,7 +93,7 @@ public class Transaction {
 
     /**
      * Reembolsa el pago en su totalidad.
-     * Regla 1: Solo se puede reembolsar si el estado es APPROVED o PARTIALLY_REFUNDED.
+     * Regla 1: Solo se puede reembolsar si el estado es APPROVED.
      * Regla 2: Si ya fue reembolsado totalmente, lanza excepción.
      */
     public void refundFull() {
@@ -114,9 +114,10 @@ public class Transaction {
 
         /**
      * Reembolsa un monto parcial del pago.
-     * Regla 1: Solo se puede reembolsar si el estado es APPROVED o PARTIALLY_REFUNDED.
+     * Regla 1: Solo se puede reembolsar si el estado es APPROVED (o legacy PARTIALLY_REFUNDED).
      * Regla 2: El monto solicitado no puede superar el disponible para reembolso.
      * Regla 3: Si el monto reembolsado acumulado iguala el total, pasa a REFUNDED.
+     * Regla 4: Reembolso parcial mantiene APPROVED — el neto se refleja en refundedAmount.
      */
     public void refundPartial(BigDecimal refundAmount) {
         if (refundAmount == null || refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -144,11 +145,10 @@ public class Transaction {
 
         this.refundedAmount = this.refundedAmount.add(refundAmount);
 
-        // Si ya se reembolsó todo, cambia a estado final REFUNDED
         if (this.refundedAmount.compareTo(this.amount) == 0) {
             this.status = TransactionStatus.REFUNDED;
         } else {
-            this.status = TransactionStatus.PARTIALLY_REFUNDED;
+            this.status = TransactionStatus.APPROVED;
         }
     }
 

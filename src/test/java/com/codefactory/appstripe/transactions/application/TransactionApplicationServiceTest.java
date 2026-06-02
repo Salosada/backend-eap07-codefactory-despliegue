@@ -125,7 +125,7 @@ class TransactionApplicationServiceTest {
 
         assertEquals(10, result.totalFinalized());
         assertEquals("80.00", result.approvalRate().toPlainString());
-        assertEquals(3, result.distribution().size());
+        assertEquals(4, result.distribution().size());
 
         verify(transactionRepositoryPort).countByMerchantIdAndStatusInAndCreatedAtBetween(
                 eq(merchantId),
