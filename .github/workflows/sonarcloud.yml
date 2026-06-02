@@ -35,7 +35,10 @@ jobs:
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
 
-      - name: Build, test and SonarCloud analysis
+      - name: Build, test and generate JaCoCo report
+        run: ./mvnw -B clean verify -Dsurefire.excludes=**/SerenityTestRunner.java
+
+      - name: SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsurefire.excludes=**/SerenityTestRunner.java
+        run: ./mvnw -B sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
