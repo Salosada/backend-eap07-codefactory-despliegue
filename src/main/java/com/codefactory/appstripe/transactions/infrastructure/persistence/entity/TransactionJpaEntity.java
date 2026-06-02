@@ -57,5 +57,8 @@ public class TransactionJpaEntity {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
+        if (this.refundedAmount == null) {
+            this.refundedAmount = BigDecimal.ZERO;
+        }
     }
 }

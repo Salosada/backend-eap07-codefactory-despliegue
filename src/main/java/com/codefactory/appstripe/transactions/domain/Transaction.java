@@ -20,6 +20,7 @@ public class Transaction {
         this.merchantId = merchantId;
         this.amount = amount;
         this.status = TransactionStatus.CREATED; // Se asigna automáticamente al nacer
+        this.refundedAmount = BigDecimal.ZERO;
     }
 
 
@@ -35,6 +36,7 @@ public class Transaction {
         this.amount = amount;
         this.status = status;
         this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
+        this.refundedAmount = BigDecimal.ZERO;
     }
     /*Constructor 2 Para reconstruir una transacción que ya existe en la base de datos
     lo usara mapper para el paquete de infraestructura
@@ -44,6 +46,7 @@ public class Transaction {
         this.merchantId = merchantId;
         this.amount = amount;
         this.status = status;
+        this.refundedAmount = BigDecimal.ZERO;
     }
     
     // Constructor completo para reconstruir desde BD con refundedAmount
