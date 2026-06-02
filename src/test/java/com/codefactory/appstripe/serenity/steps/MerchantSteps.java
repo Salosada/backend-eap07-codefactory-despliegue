@@ -111,24 +111,11 @@ public class MerchantSteps {
     private void obtenerCsrfYLoginAdmin() {
         if (context().getAdminToken() != null) return;
 
-        Response csrfResp = SerenityRest.given()
-                .when()
-                .get("/api/v1/security/csrf")
-                .then()
-                .statusCode(200)
-                .extract().response();
-
-        context().setCsrfToken(csrfResp.jsonPath().getString("token"));
-        context().setCsrfHeaderName(csrfResp.jsonPath().getString("headerName"));
-        context().setCsrfCookie(csrfResp.cookie("XSRF-TOKEN"));
-
         Map<String, Object> login = new HashMap<>();
         login.put("email", "admin@paycore.com");
         login.put("password", "admin123");
 
         Response loginResp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .contentType("application/json")
                 .body(login)
                 .when()
@@ -149,8 +136,6 @@ public class MerchantSteps {
         merchant.put("businessType", "RETAIL");
 
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("Authorization", "Bearer " + context().getAdminToken())
                 .contentType("application/json")
                 .body(merchant)
@@ -168,8 +153,6 @@ public class MerchantSteps {
         gen.put("merchantId", context().getMerchantId());
 
         Response genResp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("Authorization", "Bearer " + context().getAdminToken())
                 .contentType("application/json")
                 .body(gen)

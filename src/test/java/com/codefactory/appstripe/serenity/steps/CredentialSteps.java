@@ -188,20 +188,10 @@ public class CredentialSteps {
     // ========================================================================
 
     private void obtenerCsrfYLoginAdmin() {
-        Response csrfResp = SerenityRest.given()
-                .when().get("/api/v1/security/csrf")
-                .then().statusCode(200).extract().response();
-        context().setCsrfToken(csrfResp.jsonPath().getString("token"));
-        context().setCsrfHeaderName(csrfResp.jsonPath().getString("headerName"));
-        context().setCsrfCookie(csrfResp.cookie("XSRF-TOKEN"));
-        assertNotNull(context().getCsrfToken(), "CSRF token debe ser retornado");
-
         Map<String, Object> login = new HashMap<>();
         login.put("email", "admin@paycore.com");
         login.put("password", "admin123");
         Response loginResp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .contentType("application/json").body(login).when()
                 .post("/api/v1/auth/login")
                 .then().statusCode(200).extract().response();
@@ -217,8 +207,6 @@ public class CredentialSteps {
         merchant.put("email", context().getUniqueEmail("serenity"));
         merchant.put("businessType", "RETAIL");
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("Authorization", "Bearer " + context().getAdminToken())
                 .contentType("application/json").body(merchant).when()
                 .post("/api/v1/admin/merchants")
@@ -231,8 +219,6 @@ public class CredentialSteps {
         Map<String, Object> gen = new HashMap<>();
         gen.put("merchantId", context().getMerchantId());
         Response genResp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("Authorization", "Bearer " + context().getAdminToken())
                 .contentType("application/json").body(gen).when()
                 .post("/api/v1/admin/credentials/generate")

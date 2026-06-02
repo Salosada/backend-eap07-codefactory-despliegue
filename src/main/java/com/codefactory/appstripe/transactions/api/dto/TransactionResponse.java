@@ -45,8 +45,12 @@ public class TransactionResponse {
                 .amount(transaction.getAmount())
                 .status(statusLabel)
                 .result(result)
-                .refundedAmount(transaction.getRefundedAmount())
+                .refundedAmount(nullSafeAmount(transaction.getRefundedAmount()))
                 .availableForRefund(transaction.getAvailableForRefund())
                 .build();
+    }
+
+    private static BigDecimal nullSafeAmount(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }

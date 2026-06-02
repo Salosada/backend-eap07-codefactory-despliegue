@@ -10,6 +10,7 @@ import com.codefactory.appstripe.identity.domain.ApiCredential;
 import com.codefactory.appstripe.identity.domain.ApiCredentialPermission;
 import com.codefactory.appstripe.identity.domain.Merchant;
 import com.codefactory.appstripe.identity.domain.MerchantStatus;
+import com.codefactory.appstripe.transactions.api.dto.TransactionResponse;
 import com.codefactory.appstripe.transactions.application.port.ITransactionRepositoryPort;
 import com.codefactory.appstripe.transactions.domain.Transaction;
 import org.junit.jupiter.api.DisplayName;
@@ -104,11 +105,12 @@ class MerchantPortalControllerTest {
         List<Transaction> transactions = List.of(new Transaction("trx_1", "mch_123", new BigDecimal("150.00")));
         when(transactionRepository.findByMerchantId("mch_123")).thenReturn(transactions);
 
-        ResponseEntity<List<Transaction>> response = controller.getTransactions(authForMerchant("mch_123"));
+        ResponseEntity<List<TransactionResponse>> response = controller.getTransactions(authForMerchant("mch_123"));
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().size());
         assertEquals("mch_123", response.getBody().get(0).getMerchantId());
+        assertEquals("CREATED", response.getBody().get(0).getStatus());
     }
 
     @Test

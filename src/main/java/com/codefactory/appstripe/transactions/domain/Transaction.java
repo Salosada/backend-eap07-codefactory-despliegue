@@ -155,7 +155,8 @@ public class Transaction {
 
     /** Calcula cuánto queda disponible para reembolsar. */
     public BigDecimal getAvailableForRefund() {
-        return this.amount.subtract(this.refundedAmount);
+        BigDecimal refunded = (refundedAmount != null) ? refundedAmount : BigDecimal.ZERO;
+        return this.amount.subtract(refunded);
     }
 
 

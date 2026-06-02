@@ -86,8 +86,7 @@ public class CommonSteps {
 
     @Given("el sistema de pagos está listo para recibir peticiones")
     public void elSistemaEstaListo() {
-        // Spring Boot ya fue iniciado por @SpringBootTest en el runner
-        SerenityRest.head("/api/v1/security/csrf")
+        SerenityRest.get("/actuator/health")
                 .then().statusCode(200);
     }
 }

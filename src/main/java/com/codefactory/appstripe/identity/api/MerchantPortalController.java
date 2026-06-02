@@ -25,8 +25,8 @@ import com.codefactory.appstripe.identity.api.dto.UpdateMerchantProfileRequest;
 import com.codefactory.appstripe.identity.application.CommerceApplicationService;
 import com.codefactory.appstripe.identity.application.port.IApiCredentialRepositoryPort;
 import com.codefactory.appstripe.identity.domain.Merchant;
+import com.codefactory.appstripe.transactions.api.dto.TransactionResponse;
 import com.codefactory.appstripe.transactions.application.port.ITransactionRepositoryPort;
-import com.codefactory.appstripe.transactions.domain.Transaction;
 
 import jakarta.validation.Valid;
 
@@ -68,9 +68,11 @@ public class MerchantPortalController {
     }
 
     @GetMapping("/transactions")
-    public ResponseEntity<List<Transaction>> getTransactions(Authentication authentication) {
+    public ResponseEntity<List<TransactionResponse>> getTransactions(Authentication authentication) {
         String merchantId = extractMerchantId(authentication);
-        List<Transaction> transactions = transactionRepository.findByMerchantId(merchantId);
+        List<TransactionResponse> transactions = transactionRepository.findByMerchantId(merchantId).stream()
+                .map(TransactionResponse::fromDomain)
+                .toList();
         return ResponseEntity.ok(transactions);
     }
 

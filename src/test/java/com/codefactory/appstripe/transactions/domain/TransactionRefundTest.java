@@ -27,7 +27,7 @@ class TransactionRefundTest {
         // Assert
         assertEquals(TransactionStatus.REFUNDED, tx.getStatus());
         assertEquals(new BigDecimal("100.00"), tx.getRefundedAmount());
-        assertEquals(BigDecimal.ZERO, tx.getAvailableForRefund());
+        assertEquals(0, tx.getAvailableForRefund().compareTo(BigDecimal.ZERO));
     }
 
     @Test

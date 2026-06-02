@@ -23,9 +23,6 @@ class IntegrationApiTest {
     @LocalServerPort
     int port;
 
-    private String csrfToken;
-    private String csrfHeaderName;
-    private String csrfCookie;
     private String adminToken;
     private String merchantId;
     private String publicId;
@@ -33,33 +30,17 @@ class IntegrationApiTest {
     private String paymentId;
     private static long ts;
 
-        @BeforeAll
+    @BeforeAll
     void setup() {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = port;
         ts = System.currentTimeMillis();
 
-        // 1) Obtener CSRF token
-        Response csrfResp = given()
-            .when().get("/api/v1/security/csrf")
-            .then().statusCode(200)
-                .extract().response();
-
-        csrfToken = csrfResp.jsonPath().getString("token");
-        csrfHeaderName = csrfResp.jsonPath().getString("headerName");
-        csrfCookie = csrfResp.cookie("XSRF-TOKEN");
-
-        Assertions.assertNotNull(csrfToken, "CSRF token debe ser retornado");
-        Assertions.assertNotNull(csrfCookie, "CSRF cookie debe ser retornada");
-
-        // 2) Login como admin (creado por DataSeeder)
         Map<String, Object> login = new HashMap<>();
         login.put("email", "admin@paycore.com");
         login.put("password", "admin123");
 
         adminToken = given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .contentType("application/json")
                 .body(login)
             .when().post("/api/v1/auth/login")
@@ -70,14 +51,6 @@ class IntegrationApiTest {
 
         Assertions.assertNotNull(adminToken, "Token de admin debe ser retornado");
     }
-
-    // ========================================================================
-    // SPRINT 1
-    // ========================================================================
-
-        // ========================================================================
-    // HU001 — Registro de nuevo comercio
-    // ========================================================================
 
     @Test
     @Order(1)
@@ -90,8 +63,6 @@ class IntegrationApiTest {
         merchant.put("businessType", "RETAIL");
 
         Response resp = given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType("application/json")
                 .body(merchant)
@@ -117,8 +88,6 @@ class IntegrationApiTest {
         merchant.put("businessType", "RETAIL");
 
         given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType("application/json")
                 .body(merchant)
@@ -133,8 +102,6 @@ class IntegrationApiTest {
     @DisplayName("CP-S1-004: Registro con campos obligatorios vacíos -> HTTP 400 Bad Request")
     void cp_s1_004_registerBlankFields() {
         given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType("application/json")
                 .body("""
@@ -150,10 +117,6 @@ class IntegrationApiTest {
                 .body("errorCode", equalTo("VALIDATION_ERROR"));
     }
 
-    // ========================================================================
-    // HU002 — Generación de credenciales
-    // ========================================================================
-
     @Test
     @Order(4)
     @DisplayName("CP-S1-005: Generación exitosa de credenciales -> HTTP 201 + publicKey + secretKey")
@@ -162,8 +125,6 @@ class IntegrationApiTest {
         gen.put("merchantId", merchantId);
 
         Response genResp = given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType("application/json")
                 .body(gen)
@@ -179,8 +140,6 @@ class IntegrationApiTest {
         Assertions.assertNotNull(secret, "CP-S1-005: secret no debe ser nulo");
     }
 
-    // ---------- HU003 — Creación de una transacción de pago ----------
-
     @Test
     @Order(5)
     @DisplayName("CP-S1-008: Creación exitosa de transacción -> HTTP 201 + paymentId + status CREATED")
@@ -189,9 +148,7 @@ class IntegrationApiTest {
         tx.put("merchantId", merchantId);
         tx.put("amount", 10000);
 
-                paymentId = given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
+        paymentId = given()
                 .header("X-Merchant-Id", merchantId)
                 .header("X-Public-Id", publicId)
                 .header("X-Secret", secret)
@@ -222,7 +179,7 @@ class IntegrationApiTest {
                 .body("status", equalTo("CREATED"));
     }
 
-        @Test
+    @Test
     @Order(7)
     @DisplayName("CP-S1-010: Transacción con monto inválido (cero) -> HTTP 400")
     void cp_s1_010_createTransactionZeroAmount() {
@@ -231,8 +188,6 @@ class IntegrationApiTest {
         tx.put("amount", 0);
 
         given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("X-Merchant-Id", merchantId)
                 .header("X-Public-Id", publicId)
                 .header("X-Secret", secret)
@@ -243,7 +198,7 @@ class IntegrationApiTest {
                 .body("errorCode", equalTo("VALIDATION_ERROR"));
     }
 
-        @Test
+    @Test
     @Order(8)
     @DisplayName("CP-S1-010: Transacción con monto inválido (negativo) -> HTTP 400")
     void cp_s1_010_createTransactionNegativeAmount() {
@@ -252,8 +207,6 @@ class IntegrationApiTest {
         tx.put("amount", -500);
 
         given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("X-Merchant-Id", merchantId)
                 .header("X-Public-Id", publicId)
                 .header("X-Secret", secret)
@@ -264,7 +217,7 @@ class IntegrationApiTest {
                 .body("errorCode", equalTo("VALIDATION_ERROR"));
     }
 
-        @Test
+    @Test
     @Order(9)
     @DisplayName("CP-S1-011: Transacción con credenciales inválidas -> HTTP 401")
     void cp_s1_011_createTransactionInvalidCredentials() {
@@ -273,8 +226,6 @@ class IntegrationApiTest {
         tx.put("amount", 10000);
 
         given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .header("X-Merchant-Id", merchantId)
                 .header("X-Public-Id", "pk_live_fake")
                 .header("X-Secret", "sk_live_fake")
@@ -285,7 +236,7 @@ class IntegrationApiTest {
                 .body("errorCode", equalTo("INVALID_CREDENTIALS"));
     }
 
-        @Test
+    @Test
     @Order(10)
     @DisplayName("CP-S1-011: Sin headers de credenciales -> HTTP 401 MISSING_CREDENTIALS")
     void cp_s1_011_createTransactionMissingCredentials() {
@@ -294,13 +245,10 @@ class IntegrationApiTest {
         tx.put("amount", 10000);
 
         given()
-                .cookie("XSRF-TOKEN", csrfCookie)
-                .header(csrfHeaderName, csrfToken)
                 .contentType("application/json")
                 .body(tx)
             .when().post("/api/v1/transactions")
             .then().statusCode(401)
                 .body("errorCode", equalTo("MISSING_CREDENTIALS"));
     }
-
-    }
+}
