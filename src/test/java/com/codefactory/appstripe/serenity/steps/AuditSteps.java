@@ -26,8 +26,6 @@ public class AuditSteps {
                 { "merchantId": "%s", "amount": 15000 }
                 """.formatted(context().getMerchantId());
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
@@ -43,8 +41,6 @@ public class AuditSteps {
                 { "merchantId": "%s", "amount": 10000 }
                 """.formatted(mid);
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", mid)
                 .header("X-Public-Id", "pk_live_fake")
                 .header("X-Secret", "sk_live_fake")

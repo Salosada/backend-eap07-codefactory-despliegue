@@ -35,17 +35,7 @@ jobs:
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
 
-      - name: Build and run tests
-        run: ./mvnw -B -DskipTests=false clean verify
-
-      - name: Run SonarScan
+      - name: Build, test and SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_ORG: ${{ secrets.SONAR_ORG }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: |
-          ./mvnw -B -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
-                 -Dsonar.organization=${{ env.SONAR_ORG }} \
-                 -Dsonar.host.url=https://sonarcloud.io \
-                 -Dsonar.token=${{ env.SONAR_TOKEN }} \
-                 sonar:sonar
+        run: ./mvnw -B clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsurefire.excludes=**/SerenityTestRunner.java

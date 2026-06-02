@@ -97,8 +97,6 @@ public class TransactionSteps {
                 .replace("{id}", context().getTransactionId());
 
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
@@ -126,8 +124,6 @@ public class TransactionSteps {
                         context().getPublicId() : "pk_placeholder");
 
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
@@ -142,8 +138,6 @@ public class TransactionSteps {
     @When("se envía una solicitud GET a {string}")
     public void getEndpoint(String endpoint) {
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
@@ -304,8 +298,6 @@ public class TransactionSteps {
         tx.put("amount", 50000);
 
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())

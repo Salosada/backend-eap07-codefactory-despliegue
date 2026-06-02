@@ -73,8 +73,6 @@ public class CredentialSteps {
             existenCredencialesActivas("payments:write");
         }
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("Authorization", "Bearer " + context().getAdminToken())
                 .when()
                 .patch("/api/v1/admin/credentials/{publicId}/revoke",
@@ -94,8 +92,6 @@ public class CredentialSteps {
         body.put("merchantId", context().getMerchantId());
         body.put("amount", 25000);
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
@@ -115,8 +111,6 @@ public class CredentialSteps {
         body.put("merchantId", context().getMerchantId());
         body.put("amount", 10000);
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .contentType("application/json").body(body).when().post(endpoint);
         context().setLastResponse(resp);
     }
@@ -127,8 +121,6 @@ public class CredentialSteps {
         body.put("merchantId", "mch_intruso_123");
         body.put("amount", 10000);
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", "mch_intruso_123")
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
@@ -142,8 +134,6 @@ public class CredentialSteps {
         body.put("merchantId", context().getMerchantId());
         body.put("amount", 10000);
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", "pk_live_fake")
                 .header("X-Secret", "sk_live_fake")
@@ -160,8 +150,6 @@ public class CredentialSteps {
     public void patchEndpoint(String endpoint) {
         String resolvedEndpoint = endpoint.replace("{publicId}", context().getPublicId());
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("Authorization", "Bearer " + context().getAdminToken())
                 .when().patch(resolvedEndpoint);
         context().setLastResponse(resp);
@@ -174,8 +162,6 @@ public class CredentialSteps {
         body.put("result", "APPROVED");
         body.put("authorizationCode", "AUTH-12345");
         Response resp = SerenityRest.given()
-                .cookie("XSRF-TOKEN", context().getCsrfCookie())
-                .header(context().getCsrfHeaderName(), context().getCsrfToken())
                 .header("X-Merchant-Id", context().getMerchantId())
                 .header("X-Public-Id", context().getPublicId())
                 .header("X-Secret", context().getSecret())
