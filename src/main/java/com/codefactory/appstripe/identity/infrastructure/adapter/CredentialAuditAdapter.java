@@ -15,9 +15,11 @@ public class CredentialAuditAdapter implements ICredentialAuditPort {
 
     @Override
     public void publishCredentialRevoked(String publicId, String actorMerchantId, Instant revokedAt) {
+        String safePublicId = publicId != null ? publicId.replaceAll("[\n\r]", "_") : null;
+        String safeActorMerchantId = actorMerchantId != null ? actorMerchantId.replaceAll("[\n\r]", "_") : null;
         log.info(
             "[AUDIT] CREDENTIAL_REVOKED | publicId={} | actorMerchantId={} | revokedAt={}",
-            publicId, actorMerchantId, revokedAt
+            safePublicId, safeActorMerchantId, revokedAt
         );
     }
 }
