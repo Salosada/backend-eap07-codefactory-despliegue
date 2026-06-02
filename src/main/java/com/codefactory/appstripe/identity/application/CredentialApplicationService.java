@@ -1,6 +1,7 @@
 package com.codefactory.appstripe.identity.application;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
@@ -111,5 +112,9 @@ public class CredentialApplicationService {
         credentialAudit.publishCredentialRevoked(publicId, "ADMIN", Instant.now());
 
         return saved;
+    }
+
+    public List<ApiCredential> listAllCredentials() {
+        return credentialRepository.findAll();
     }
 }

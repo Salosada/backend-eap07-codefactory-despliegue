@@ -1,10 +1,9 @@
 package com.codefactory.appstripe.security.infrastructure.config;
 
-import com.codefactory.appstripe.common.api.ErrorResponse;
 import com.codefactory.appstripe.security.infrastructure.filter.CredentialValidationFilter;
 import com.codefactory.appstripe.security.infrastructure.filter.JwtAuthenticationFilter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,46 +14,60 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.io.IOException;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CredentialValidationFilter credentialValidationFilter;
-    private final ObjectMapper objectMapper;
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String allowedOrigins;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter,
-            CredentialValidationFilter credentialValidationFilter,
-            ObjectMapper objectMapper
-    ) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.credentialValidationFilter = credentialValidationFilter;
-        this.objectMapper = objectMapper;
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(parseOrigins(allowedOrigins));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            CredentialValidationFilter credentialValidationFilter,
+            SecurityErrorWriter errorWriter,
+            CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                writeError(response, HttpServletResponse.SC_FORBIDDEN, "ACCESS_DENIED", accessDeniedException.getMessage()))
-                        .authenticationEntryPoint((request, response, authException) ->
-                                writeError(response, HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", authException.getMessage()))
+                        .accessDeniedHandler((request, response, ex) ->
+                                errorWriter.write(response, HttpServletResponse.SC_FORBIDDEN,
+                                        "ACCESS_DENIED", ex.getMessage()))
+                        .authenticationEntryPoint((request, response, ex) ->
+                                errorWriter.write(response, HttpServletResponse.SC_UNAUTHORIZED,
+                                        "UNAUTHORIZED", ex.getMessage()))
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/info").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/transactions/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
@@ -72,20 +85,14 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
-
-    private void writeError(HttpServletResponse response, int status, String errorCode, String message) throws IOException {
-        response.setStatus(status);
-        response.setContentType("application/json");
-
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(errorCode)
-                .message(message)
-                .details(List.of(message))
-                .traceId(UUID.randomUUID().toString())
-                .timestamp(Instant.now())
-                .build();
-
-        objectMapper.writeValue(response.getWriter(), errorResponse);
+    private List<String> parseOrigins(String origins) {
+        List<String> result = new ArrayList<>();
+        for (String origin : origins.split(",")) {
+            String trimmed = origin.trim();
+            if (!trimmed.isBlank()) {
+                result.add(trimmed);
+            }
+        }
+        return result;
     }
 }

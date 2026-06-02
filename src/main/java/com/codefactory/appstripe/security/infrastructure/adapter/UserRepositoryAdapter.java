@@ -6,6 +6,7 @@ import com.codefactory.appstripe.security.infrastructure.persistence.UserJpaEnti
 import com.codefactory.appstripe.security.infrastructure.persistence.repository.IUserSpringRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -37,6 +38,11 @@ public class UserRepositoryAdapter implements IUserRepositoryPort {
         UserJpaEntity entity = toEntity(user);
         UserJpaEntity saved = repository.save(entity);
         return toDomain(saved);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return repository.findAll().stream().map(this::toDomain).toList();
     }
 
     private UserJpaEntity toEntity(User user) {

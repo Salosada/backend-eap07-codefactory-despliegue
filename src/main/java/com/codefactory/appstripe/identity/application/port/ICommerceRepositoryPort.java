@@ -2,6 +2,7 @@ package com.codefactory.appstripe.identity.application.port;
 
 import com.codefactory.appstripe.identity.domain.Merchant;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ICommerceRepositoryPort {
@@ -14,4 +15,6 @@ public interface ICommerceRepositoryPort {
     boolean existsByBusinessId(String businessId);
 
     boolean existsByEmail(String email);
+
+    List<Merchant> findAll();
 }

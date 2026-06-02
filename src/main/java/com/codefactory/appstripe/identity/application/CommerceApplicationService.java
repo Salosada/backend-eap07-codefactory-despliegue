@@ -1,5 +1,6 @@
 package com.codefactory.appstripe.identity.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import com.codefactory.appstripe.identity.domain.ApiCredentialPermission;
 import com.codefactory.appstripe.identity.domain.Merchant;
 import com.codefactory.appstripe.identity.domain.MerchantStatus;
 import com.codefactory.appstripe.security.application.AuthenticationService;
+import com.codefactory.appstripe.security.domain.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +21,7 @@ public class CommerceApplicationService {
     private final ICommerceRepositoryPort commerceRepository;
     private final AuthenticationService authenticationService;
 
-    public Merchant registerMerchant(String businessName, String businessId, String email, String businessType) {
+    public MerchantRegistrationResult registerMerchant(String businessName, String businessId, String email, String businessType) {
         if (commerceRepository.existsByBusinessId(businessId)) {
             throw new IllegalStateException("Ya existe un comercio con el número de identificación fiscal indicado");
         }
@@ -39,11 +41,13 @@ public class CommerceApplicationService {
 
         Merchant savedMerchant = commerceRepository.save(merchant);
 
-        // Crear usuario para el comercio
-        authenticationService.createMerchantUser(email, savedMerchant.getId());
+        User user = authenticationService.createMerchantUser(email, savedMerchant.getId());
 
-        // Retornamos el comercio
-        return savedMerchant;
+        return new MerchantRegistrationResult(savedMerchant, user.getInvitationToken());
+    }
+
+    public List<Merchant> listMerchants() {
+        return commerceRepository.findAll();
     }
 
     // Método que permite optener un Merchant a partir de su ID, se utiliza para obtener el perfil del comercio a partir del token JWT

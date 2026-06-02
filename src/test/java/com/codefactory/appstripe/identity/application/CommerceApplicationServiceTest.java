@@ -40,16 +40,18 @@ class CommerceApplicationServiceTest {
         when(commerceRepository.existsByBusinessId("900123456")).thenReturn(false);
         when(commerceRepository.existsByEmail("ops@merchant.com")).thenReturn(false);
         when(commerceRepository.save(any(Merchant.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(authenticationService.createMerchantUser(anyString(), anyString())).thenReturn(new User());
+        when(authenticationService.createMerchantUser(anyString(), anyString()))
+                .thenReturn(User.builder().invitationToken("invite-token-123").build());
 
-        Merchant result = commerceApplicationService.registerMerchant(
+        MerchantRegistrationResult result = commerceApplicationService.registerMerchant(
                 "Tienda Demo",
                 "900123456",
                 "ops@merchant.com",
                 "Retail");
 
-        assertEquals("Tienda Demo", result.getBusinessName());
-        assertEquals(MerchantStatus.VERIFIED, result.getStatus());
+        assertEquals("Tienda Demo", result.getMerchant().getBusinessName());
+        assertEquals(MerchantStatus.VERIFIED, result.getMerchant().getStatus());
+        assertEquals("invite-token-123", result.getInvitationToken());
     }
 
     @Test

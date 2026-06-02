@@ -1,6 +1,7 @@
 package com.codefactory.appstripe.identity.api;
 
 import com.codefactory.appstripe.identity.application.CommerceApplicationService;
+import com.codefactory.appstripe.identity.application.MerchantRegistrationResult;
 import com.codefactory.appstripe.identity.domain.ApiCredentialPermission;
 import com.codefactory.appstripe.identity.domain.Merchant;
 import com.codefactory.appstripe.identity.domain.MerchantStatus;
@@ -55,7 +56,7 @@ class CommerceControllerTest {
                 .build();
 
         when(commerceApplicationService.registerMerchant(anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(merchant);
+                .thenReturn(new MerchantRegistrationResult(merchant, "invite-token-123"));
 
         mockMvc.perform(post("/api/v1/admin/merchants")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -69,7 +70,8 @@ class CommerceControllerTest {
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("mch_123"))
-                .andExpect(jsonPath("$.status").value("VERIFIED"));
+                .andExpect(jsonPath("$.status").value("VERIFIED"))
+                .andExpect(jsonPath("$.invitationToken").value("invite-token-123"));
     }
 
     @Test

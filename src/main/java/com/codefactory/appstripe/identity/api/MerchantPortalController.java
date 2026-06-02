@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.codefactory.appstripe.identity.api.dto.CredentialItemResponse;
 import com.codefactory.appstripe.identity.api.dto.MerchantResponse;
 import com.codefactory.appstripe.identity.api.dto.UpdateMerchantProfileRequest;
 import com.codefactory.appstripe.identity.application.CommerceApplicationService;
 import com.codefactory.appstripe.identity.application.port.IApiCredentialRepositoryPort;
-import com.codefactory.appstripe.identity.domain.ApiCredential;
 import com.codefactory.appstripe.identity.domain.Merchant;
 import com.codefactory.appstripe.transactions.application.port.ITransactionRepositoryPort;
 import com.codefactory.appstripe.transactions.domain.Transaction;
@@ -59,9 +59,11 @@ public class MerchantPortalController {
     }
 
     @GetMapping("/credentials")
-    public ResponseEntity<List<ApiCredential>> getCredentials(Authentication authentication) {
+    public ResponseEntity<List<CredentialItemResponse>> getCredentials(Authentication authentication) {
         String merchantId = extractMerchantId(authentication);
-        List<ApiCredential> credentials = credentialRepository.findByMerchantIdAndActiveTrue(merchantId);
+        List<CredentialItemResponse> credentials = credentialRepository.findByMerchantIdAndActiveTrue(merchantId).stream()
+                .map(CredentialItemResponse::fromDomain)
+                .toList();
         return ResponseEntity.ok(credentials);
     }
 

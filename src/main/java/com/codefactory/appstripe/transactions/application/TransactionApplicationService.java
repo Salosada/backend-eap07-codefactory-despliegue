@@ -78,6 +78,10 @@ public class TransactionApplicationService {
         return transactionRepositoryPort.findByMerchantId(merchantId);
     }
 
+    public List<Transaction> getAllTransactions() {
+        return transactionRepositoryPort.findAll();
+    }
+
     public Transaction completeTransaction(String transactionId, String result, String authorizationCode, String rejectionReason) {
         Transaction transaction = transactionRepositoryPort.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transacción no encontrada con ID: " + transactionId));

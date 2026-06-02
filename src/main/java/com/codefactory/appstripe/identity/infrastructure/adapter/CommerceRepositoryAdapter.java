@@ -6,6 +6,7 @@ import com.codefactory.appstripe.identity.infrastructure.persistence.entity.Merc
 import com.codefactory.appstripe.identity.infrastructure.persistence.repository.ICommerceSpringRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -36,6 +37,11 @@ public class CommerceRepositoryAdapter implements ICommerceRepositoryPort {
     @Override
     public boolean existsByEmail(String email) {
         return springRepository.existsByEmail(email);
+    }
+
+    @Override
+    public List<Merchant> findAll() {
+        return springRepository.findAll().stream().map(this::toDomain).toList();
     }
 
     private MerchantJpaEntity toEntity(Merchant merchant) {

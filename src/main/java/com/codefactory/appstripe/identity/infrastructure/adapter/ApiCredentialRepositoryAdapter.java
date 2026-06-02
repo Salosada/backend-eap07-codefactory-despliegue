@@ -44,6 +44,11 @@ public class ApiCredentialRepositoryAdapter implements IApiCredentialRepositoryP
                 .map(this::toDomain);
     }
 
+    @Override
+    public List<ApiCredential> findAll() {
+        return springRepository.findAll().stream().map(this::toDomain).toList();
+    }
+
 
     private ApiCredentialJpaEntity toEntity(ApiCredential credential) {
         ApiCredentialJpaEntity entity = new ApiCredentialJpaEntity();

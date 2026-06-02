@@ -1,5 +1,6 @@
 package com.codefactory.appstripe.security.application;
 
+import com.codefactory.appstripe.security.api.dto.AccountStatusResponse;
 import com.codefactory.appstripe.security.api.dto.JwtResponse;
 import com.codefactory.appstripe.security.application.port.IJwtProviderPort;
 import com.codefactory.appstripe.security.application.port.IPasswordEncoderPort;
@@ -8,6 +9,7 @@ import com.codefactory.appstripe.security.application.port.TwoFactorPort;
 import com.codefactory.appstripe.security.domain.User;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -91,5 +93,11 @@ public class AuthenticationService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    public List<AccountStatusResponse> listAccounts() {
+        return userRepository.findAll().stream()
+                .map(AccountStatusResponse::fromDomain)
+                .toList();
     }
 }

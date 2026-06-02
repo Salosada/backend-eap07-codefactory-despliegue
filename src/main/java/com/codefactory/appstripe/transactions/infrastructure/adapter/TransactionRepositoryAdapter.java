@@ -105,4 +105,11 @@ public class TransactionRepositoryAdapter implements ITransactionRepositoryPort 
                 row.getFailedCount().longValue()
         );
     }
+
+    @Override
+    public List<Transaction> findAll() {
+        return springRepository.findAll().stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 }

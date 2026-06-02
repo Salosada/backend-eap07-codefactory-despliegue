@@ -41,4 +41,6 @@ public interface ITransactionRepositoryPort {
             LocalDateTime toExclusive
     );
 
+    List<Transaction> findAll();
+
 }

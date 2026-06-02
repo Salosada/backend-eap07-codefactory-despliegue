@@ -11,4 +11,6 @@ public interface IApiCredentialRepositoryPort {
     List<ApiCredential> findByMerchantIdAndActiveTrue(String merchantId);
     long countByMerchantIdAndActiveTrue(String merchantId);
     Optional<ApiCredential> findByPublicId(String publicId);
+
+    List<ApiCredential> findAll();
 }

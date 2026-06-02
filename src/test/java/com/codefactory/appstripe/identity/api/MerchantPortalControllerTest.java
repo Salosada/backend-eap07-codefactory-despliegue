@@ -1,5 +1,6 @@
 package com.codefactory.appstripe.identity.api;
 
+import com.codefactory.appstripe.identity.api.dto.CredentialItemResponse;
 import com.codefactory.appstripe.identity.api.dto.MerchantResponse;
 import com.codefactory.appstripe.identity.api.dto.UpdateMerchantProfileRequest;
 import com.codefactory.appstripe.identity.application.CommerceApplicationService;
@@ -120,7 +121,7 @@ class MerchantPortalControllerTest {
                 .build());
         when(credentialRepository.findByMerchantIdAndActiveTrue("mch_123")).thenReturn(credentials);
 
-        ResponseEntity<List<ApiCredential>> response = controller.getCredentials(authForMerchant("mch_123"));
+        ResponseEntity<List<CredentialItemResponse>> response = controller.getCredentials(authForMerchant("mch_123"));
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().size());

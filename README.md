@@ -115,6 +115,54 @@ docs/
 	architecture/
 ```
 
+## Despliegue (TiDB + Render + Vercel)
+
+### 1) TiDB Cloud
+
+1. Crear cluster y base de datos `appstripe`.
+2. Copiar la cadena JDBC del panel (puerto **4000**, SSL obligatorio).
+3. Ejemplo de URL:
+   `jdbc:mysql://HOST:4000/appstripe?useSSL=true&requireSSL=true&serverTimezone=UTC`
+
+### 2) Render (backend)
+
+1. Conectar el repo `backend-eap07-codefactory` en [Render](https://render.com).
+2. Usar **Docker** con el `Dockerfile` del repo (o importar `render.yaml` como Blueprint).
+3. Variables de entorno obligatorias:
+
+| Variable | Valor |
+|---|---|
+| `SPRING_PROFILES_ACTIVE` | `prod` |
+| `SPRING_DOCKER_COMPOSE_ENABLED` | `false` |
+| `SPRING_DATASOURCE_URL` | JDBC de TiDB |
+| `SPRING_DATASOURCE_USERNAME` | usuario TiDB |
+| `SPRING_DATASOURCE_PASSWORD` | contraseña TiDB |
+| `JWT_SECRET` | string largo aleatorio |
+| `CORS_ALLOWED_ORIGINS` | `https://tu-app.vercel.app,https://*.vercel.app` |
+
+4. Health check: `/actuator/health`
+5. Tras el primer deploy se crea el admin seed: `admin@paycore.com` / `admin123`
+
+Referencia completa de variables: [.env.example](.env.example)
+
+### 3) Vercel (frontend)
+
+1. Conectar el repo `frontend-appstripe`.
+2. Variable **obligatoria antes del build**:
+
+| Variable | Valor |
+|---|---|
+| `BACKEND_URL` | `https://appstripe-api.onrender.com` (URL de Render sin barra final) |
+
+3. El frontend llama al backend vía proxy interno `/backend/*` (ver `next.config.ts`). No uses `NEXT_PUBLIC_*` para la URL del API.
+4. Si cambias `BACKEND_URL`, redeploy en Vercel para regenerar los rewrites.
+
+Referencia: [frontend `.env.local.example`](../frontend-appstripe/.env.local.example)
+
+### Orden recomendado
+
+1. TiDB → 2. Render (verificar `/actuator/health`) → 3. Vercel con `BACKEND_URL` → 4. Actualizar `CORS_ALLOWED_ORIGINS` en Render con la URL real de Vercel.
+
 ## Equipo
 
 Proyecto academico de Fabrica Escuela CodeFactory (EAP07), orientado a buenas practicas de backend, arquitectura y seguridad aplicada a APIs de pagos.
