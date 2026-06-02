@@ -42,6 +42,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    @SuppressWarnings("java:S4502")
     public SecurityFilterChain filterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -50,6 +51,9 @@ public class SecurityConfig {
             CorsConfigurationSource corsConfigurationSource
     ) throws Exception {
         http
+                // CSRF is disabled intentionally: this API is stateless (SessionCreationPolicy.STATELESS).
+                // Admin/merchant auth uses Bearer JWT; transaction API uses custom headers (X-Public-Id, X-Secret).
+                // Browsers do not attach those credentials on cross-site requests, so CSRF does not apply.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .formLogin(AbstractHttpConfigurer::disable)
