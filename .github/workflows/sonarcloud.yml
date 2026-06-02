@@ -38,7 +38,10 @@ jobs:
       - name: Build, test and generate JaCoCo report
         run: ./mvnw -B clean verify -Dsurefire.excludes=**/SerenityTestRunner.java
 
+      - name: Verify JaCoCo report exists
+        run: test -f target/jacoco/jacoco.xml
+
       - name: SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw -B -DskipTests sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco/jacoco.xml

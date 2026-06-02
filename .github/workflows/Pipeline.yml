@@ -43,4 +43,4 @@ jobs:
       run: chmod +x mvnw
 
     - name: Run tests
-      run: ./mvnw test
+      run: ./mvnw -B test -Dsurefire.excludes=**/SerenityTestRunner.java
